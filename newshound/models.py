@@ -1,5 +1,6 @@
 from django.core import validators
 from django.db import models
+from django.urls import reverse
 
 from django_countries.fields import CountryField
 
@@ -59,6 +60,9 @@ class Dog(models.Model):
 
     def __str__(self):
         return self.name
+
+    def get_absolute_url(self):
+        return reverse('admin:newshound_dog_change', args=[self.pk])
 
     class Meta:
         ordering = ('name',)

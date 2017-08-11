@@ -1,6 +1,6 @@
 from collections import OrderedDict
-from django.contrib import admin
-from django.contrib import messages
+from django.contrib import admin, messages
+from django.utils.html import format_html
 
 from .models import Post, Dog, Breed, BreedGroup, DogBreedRelationship
 
@@ -51,7 +51,26 @@ class DogInline(admin.TabularInline):
 class PostAdmin(PubStatusActionMixin, admin.ModelAdmin):
     model = Post
     inlines = [DogInline]
-    list_display = ['__str__', 'publication_status', 'pub_date']
+    list_display = ['__str__', 'headline', 'dogs', 'publication_status', 'pub_date']
+    list_editable = ['headline']
+
+    def dogs(self, obj):
+        """
+        dogs_mentioned is a ManyToManyField, so this `dogs` list_display method
+        lets it show up.
+
+        format_html with hyperlinks to
+        """
+        return format_html('<br />'.join([
+            '{0} <a href="{1}" target="_blank" alt="Link to {0}\'s detail page">&#x2197;</a>'.format(dog.name, dog.get_absolute_url())
+            for dog in obj.dogs_mentioned.all()
+        ]))
+
+    def breeds(self, obj):
+        pass
+
+    def breed_groups(self, obj):
+        pass
 
 
 class DogAdmin(admin.ModelAdmin):
