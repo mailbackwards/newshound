@@ -31,6 +31,9 @@ class Breed(models.Model):
     def __str__(self):
         return self.name
 
+    class Meta:
+        ordering = ('name',)
+
 
 class DogBreedRelationship(models.Model):
     breed = models.ForeignKey(Breed, related_name='dog_relations')
@@ -57,11 +60,29 @@ class Dog(models.Model):
     def __str__(self):
         return self.name
 
+    class Meta:
+        ordering = ('name',)
+
 
 class Post(models.Model):
+    PUB_STATUS_DRAFT = 'D'
+    PUB_STATUS_EDIT = 'E'
+    PUB_STATUS_PUBLISHED = 'P'
+    PUB_STATUS_CHOICES = (
+        (PUB_STATUS_DRAFT, 'Draft'),
+        (PUB_STATUS_EDIT, 'Edit'),
+        (PUB_STATUS_PUBLISHED, 'Published')
+    )
+
     headline = models.CharField(max_length=512, blank=False, null=False)
+    pub_date = models.DateTimeField('Publication date', auto_now_add=True)
+    publication_status = models.CharField(max_length=1,
+        choices=PUB_STATUS_CHOICES, default=PUB_STATUS_DRAFT)
     body = models.TextField(blank=True, default=u'')
     dogs_mentioned = models.ManyToManyField(Dog, related_name='posts', blank=True)
 
     def __str__(self):
         return self.headline
+
+    class Meta:
+        ordering = ('-pub_date',)
