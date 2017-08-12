@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 
     'django_countries',
+    'django_object_actions',
 
     'newshound',
 ]

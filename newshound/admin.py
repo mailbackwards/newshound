@@ -1,43 +1,71 @@
-from collections import OrderedDict
 from django.contrib import admin, messages
+from django.shortcuts import render, redirect
 from django.utils.html import format_html
 
+from django_object_actions import DjangoObjectActions, takes_instance_or_queryset
+
+from .admin_mixins import ActionFieldMixin
 from .models import Post, Dog, Breed, BreedGroup, DogBreedRelationship
 
 
-# NOTE: this could be abstracted one more level to a `ChoiceActionMixin`.
-# Put a `choice_actions` attr on the admin and use it to dynamically make
+class PostAdmin(DjangoObjectActions, ActionFieldMixin, admin.ModelAdmin):
+    model = Post
+    list_display = ['pub_date', 'headline', 'publication_status']
+    list_editable = ['headline']
+    action_fields = ['publication_status']  # from ActionFieldMixin
 
-def make_pub_status_action(value, verbose_name):
-    """Makes an admin action that updates publication_status to `value`."""
-    action_name = 'set_pub_status_to_%s' % verbose_name.lower()
-    description = 'Set publication status to "%s"' % verbose_name
+    ### Admin defaults ###
 
-    def action(modeladmin, request, queryset):
-        qs_count = queryset.update(publication_status=value)
-        msg_intro = 'One item was' if qs_count == 1 else '%d items were' % qs_count
-        msg = '%s successfully set to "%s"' % (msg_intro, verbose_name)
-        messages.success(request, msg)
-    return action, action_name, description
+    def get_queryset(self, request):
+        # prefetch the fields we'll be using
+        qs = super(PostAdmin, self).get_queryset(request)
+        return qs.prefetch_related('dogs_mentioned')
+
+    ### Custom display methods ###
+
+    def dogs(self, obj):
+        # adds a 'dogs' column with a link to view details for each
+        dog_html = [(
+            '{name} <a href="{absurl}" target="_blank" '
+            'alt="Link to {name}\'s detail page">&#x2197;</a>'.format(
+                name=dog.name, absurl=dog.get_absolute_url())
+        ) for dog in obj.dogs_mentioned.all()]
+        return format_html('<br />'.join(dog_html))
+
+    ### Object actions ###
+
+    def make_dogs_good(self, request, obj):
+        """Set all dogs mentioned in this article to be `good`. Good dogs!"""
+        num_dogs = obj.dogs_mentioned.update(is_good=True)
+        self.message_user(request, '{} dogs are now good'.format(num_dogs))
+    make_dogs_good.label = 'Make dogs good'
+    make_dogs_good.short_description = 'Set all dogs in this post to be Good'
+
+    @takes_instance_or_queryset
+    def view_breeds(self, request, queryset):
+        """Provide a shortcut link to breeds in both changelist and change views."""
+        return redirect('admin:newshound_breed_changelist')
+    view_breeds.label = 'View breeds'
+
+    def publish_edited(modeladmin, request, queryset):
+        """Publish all items currently marked as `Edit`. Includes a confirmation view."""
+        edit_posts = queryset.filter(publication_status=Post.PUB_STATUS_EDIT)
+        if 'confirm' in request.POST:
+            num_posts = edit_posts.update(publication_status=Post.PUB_STATUS_PUBLISHED)
+            messages.success(request, '{} post(s) updated'.format(num_posts))
+            return None
+        else:
+            return render(request, 'publish_confirm.html', {'posts': edit_posts})
+    publish_edited.label = 'Publish all edits'
+
+    # Set the object_actions
+    changelist_actions = ('view_breeds', 'publish_edited')
+    change_actions = ('view_breeds', 'make_dogs_good')
 
 
-class PubStatusActionMixin(object):
-    """
-    Mixin for the content admin that replaces the bulk-delete action with
-    bulk-set actions for each of the `publication_status` choices.
-    These are limited to editors and superusers.
-    """
-    def get_actions(self, request):
-        # if it's explicitly set to None, don't show any
-        if self.actions is None:
-            return OrderedDict()
-
-        actions = super(PubStatusActionMixin, self).get_actions(request)
-        if request.user.is_superuser:
-            for value, verbose_name in Post.PUB_STATUS_CHOICES:
-                action = make_pub_status_action(value, verbose_name)
-                actions[action[1]] = action
-        return actions
+class DogAdmin(ActionFieldMixin, admin.ModelAdmin):
+    model = Dog
+    action_fields = ['is_good']     # from ActionFieldMixin
 
 
 class DogBreedInline(admin.TabularInline):
@@ -46,36 +74,6 @@ class DogBreedInline(admin.TabularInline):
 
 class DogInline(admin.TabularInline):
     model = Post.dogs_mentioned.through
-
-
-class PostAdmin(PubStatusActionMixin, admin.ModelAdmin):
-    model = Post
-    inlines = [DogInline]
-    list_display = ['__str__', 'headline', 'dogs', 'publication_status', 'pub_date']
-    list_editable = ['headline']
-
-    def dogs(self, obj):
-        """
-        dogs_mentioned is a ManyToManyField, so this `dogs` list_display method
-        lets it show up.
-
-        format_html with hyperlinks to
-        """
-        return format_html('<br />'.join([
-            '{0} <a href="{1}" target="_blank" alt="Link to {0}\'s detail page">&#x2197;</a>'.format(dog.name, dog.get_absolute_url())
-            for dog in obj.dogs_mentioned.all()
-        ]))
-
-    def breeds(self, obj):
-        pass
-
-    def breed_groups(self, obj):
-        pass
-
-
-class DogAdmin(admin.ModelAdmin):
-    model = Dog
-    inlines = [DogBreedInline]
 
 
 class BreedAdmin(admin.ModelAdmin):

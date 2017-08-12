@@ -51,6 +51,7 @@ class Dog(models.Model):
     name = models.CharField(max_length=128, blank=False, null=False)
     date_of_birth = models.DateField(null=True)
     photo = models.URLField(blank=True, default='http://via.placeholder.com/350x150')
+    is_good = models.BooleanField(default=True)
     breeds = models.ManyToManyField(
         Breed,
         related_name='dogs',
