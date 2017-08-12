@@ -1,6 +1,17 @@
+from functools import update_wrapper
 from collections import OrderedDict
-from django.contrib import messages
+import random
 
+from django.conf.urls import url
+from django.contrib import messages
+from django.http.response import JsonResponse
+from django.shortcuts import get_object_or_404
+
+from .models import Dog
+from .serializers import DogSerializer
+
+
+### Dynamic action mixin
 
 def make_field_action(field_name, field_verbose_name, value, value_verbose_name):
     name = 'set_{}_to_{}'.format(field_name, value)
@@ -12,6 +23,7 @@ def make_field_action(field_name, field_verbose_name, value, value_verbose_name)
             '{} item(s) successfully set to "{}"'.format(qs_count, value_verbose_name)
         )
     return action, name, description
+
 
 class ActionFieldMixin(object):
     """
@@ -40,3 +52,41 @@ class ActionFieldMixin(object):
                     field.name, field.verbose_name, value, verbose_name)
                 actions[action[1]] = action
         return actions
+
+
+### Custom view mixin
+
+def get_trending_dogs(obj):
+    """Advanced machine learning dog trend detection algorithm goes here..."""
+    dogs = Dog.objects.all()
+    return random.sample(list(dogs), 3)
+
+
+class TrendingDogMixin(object):
+    def trending(self, request, object_id, **kwargs):
+        if request.method == 'GET':
+            obj = get_object_or_404(self.model, id=object_id)
+            trending_dogs = get_trending_dogs(obj)
+            dogs = DogSerializer(trending_dogs, many=True).data
+            return JsonResponse({'dogs': dogs, 'success': True})
+        else:
+            return JsonResponse({'dogs': None, 'success': False})
+
+    def get_urls(self):
+        urls = super(TrendingDogMixin, self).get_urls()
+
+        def wrap(view):
+            def wrapper(*args, **kwargs):
+                return self.admin_site.admin_view(view)(*args, **kwargs)
+            wrapper.model_admin = self
+            return update_wrapper(wrapper, view)
+
+        info = self.model._meta.app_label, self.model._meta.model_name
+        suggest_urls = [
+            url(r'^(.+)/change/trending/$', wrap(self.trending),
+                name='%s_%s_trending' % info)
+        ]
+        return suggest_urls + urls
+
+    class Media:
+        js = (('dog_trending.js'),)

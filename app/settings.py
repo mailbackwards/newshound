@@ -40,6 +40,7 @@ INSTALLED_APPS = [
 
     'django_countries',
     'django_object_actions',
+    'rest_framework',
 
     'newshound',
 ]

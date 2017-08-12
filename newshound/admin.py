@@ -4,11 +4,11 @@ from django.utils.html import format_html
 
 from django_object_actions import DjangoObjectActions, takes_instance_or_queryset
 
-from .admin_mixins import ActionFieldMixin
+from .admin_mixins import ActionFieldMixin, TrendingDogMixin
 from .models import Post, Dog, Breed, BreedGroup, DogBreedRelationship
 
 
-class PostAdmin(DjangoObjectActions, ActionFieldMixin, admin.ModelAdmin):
+class PostAdmin(DjangoObjectActions, ActionFieldMixin, TrendingDogMixin, admin.ModelAdmin):
     model = Post
     list_display = ['pub_date', 'headline', 'publication_status']
     list_editable = ['headline']
