@@ -1,6 +1,5 @@
 from functools import update_wrapper
 from collections import OrderedDict
-import random
 
 from django.conf.urls import url
 from django.contrib import messages
@@ -8,10 +7,8 @@ from django.http.response import JsonResponse
 from django.shortcuts import get_object_or_404
 
 from .models import Dog
-from .serializers import DogSerializer
+from .api import DogSerializer, dog_api_view
 
-
-### Dynamic action mixin
 
 def make_field_action(field_name, field_verbose_name, value, value_verbose_name):
     name = 'set_{}_to_{}'.format(field_name, value)
@@ -29,6 +26,10 @@ class ActionFieldMixin(object):
     """
     Specify any `action_fields` (a BooleanField or CharField with choices).
     Adds an action to the list view for each choice.
+
+    For instance, `action_fields = ['publication_status']` might add a few
+    actions to the model, such as "Set publication status to Draft" and
+    "Set publication status to Published".
     """
     action_fields = []
 
@@ -54,24 +55,25 @@ class ActionFieldMixin(object):
         return actions
 
 
-### Custom view mixin
-
-def get_trending_dogs(obj):
-    """Advanced machine learning dog trend detection algorithm goes here..."""
-    dogs = Dog.objects.all()
-    return random.sample(list(dogs), 3)
-
-
 class TrendingDogMixin(object):
+    """
+    Adds two JSON views to the ModelAdmin:
+
+    - an /<object-id>/change/trending endpoint, driven by ModelAdmin method
+    - a /trending endpoint, driven by REST framework
+
+    This demonstrates how to add list-wide and object-specific views to admin.
+    It also demonstrates two different ways to structure admin AJAX views.
+    """
     def trending(self, request, object_id, **kwargs):
         if request.method == 'GET':
             obj = get_object_or_404(self.model, id=object_id)
-            # Advanced machine learning dog trend detection algorithm here...
-            trending_dogs = get_trending_dogs(obj)
+            # We could filter by dogs specific to this post here, if needed
+            trending_dogs = Dog.trending.all()[:3]
             dogs = DogSerializer(trending_dogs, many=True).data
-            return JsonResponse({'dogs': dogs, 'success': True})
+            return JsonResponse({'results': dogs})
         else:
-            return JsonResponse({'dogs': None, 'success': False})
+            return JsonResponse({'results': []})
 
     def get_urls(self):
         urls = super(TrendingDogMixin, self).get_urls()
@@ -84,6 +86,11 @@ class TrendingDogMixin(object):
 
         info = self.model._meta.app_label, self.model._meta.model_name
         suggest_urls = [
+            # Use the API on the list view.
+            # With some extra lifting, we could use retrieve() too.
+            url(r'^trending/$', wrap(dog_api_view),
+                name='%s_%s_trending' % info),
+            # Use the admin method on detail views, with object_id
             url(r'^(.+)/change/trending/$', wrap(self.trending),
                 name='%s_%s_trending' % info)
         ]

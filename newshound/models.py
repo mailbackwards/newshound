@@ -47,6 +47,13 @@ class DogBreedRelationship(models.Model):
     )
 
 
+class TrendingDogManager(models.Manager):
+    def get_queryset(self, **kwargs):
+        # Advanced machine learning dog trend detection algorithm here...
+        qs = super(TrendingDogManager, self).get_queryset(**kwargs)
+        return qs.order_by('?')
+
+
 class Dog(models.Model):
     name = models.CharField(max_length=128, blank=False, null=False)
     date_of_birth = models.DateField(null=True)
@@ -58,6 +65,9 @@ class Dog(models.Model):
         through=DogBreedRelationship,
         blank=True
     )
+
+    objects = models.Manager()
+    trending = TrendingDogManager()
 
     def __str__(self):
         return self.name

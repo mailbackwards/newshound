@@ -1,5 +1,5 @@
 django.jQuery(function($) {
-    var $target = $('#content');    // element to put the container before
+    var $target = $('#content-main');    // element to put the container before
 
     function makeContainer() {
         var $container = $('<div>' +
@@ -12,9 +12,8 @@ django.jQuery(function($) {
 
     function writeResults(results) {
         var html = '<table>';
-        for (var i = 0; i < results.dogs.length; i++) {
-            var dog = results.dogs[i]
-            html += '<tr><td>' + dog.name + '</td><td>' + dog.breeds + '</td><td><img src="' + dog.photo + '" height="50px" width="100px"></td></tr>'
+        for (var i = 0; i < results.length; i++) {
+            html += '<tr><td><img src="' + results[i].photo + '" height="50px" width="100px"></td><td>' + results[i].name + '</td><td>' + results[i].breeds + '</td></tr>'
         }
         html += '</table>';
         $('#trending').html(html);
@@ -23,16 +22,13 @@ django.jQuery(function($) {
     function refreshAPI(results) {
         var url = window.location.pathname + 'trending/'  // hack
         $.ajax({url: url, method: 'get', success: function(data) {
-            writeResults(data);
+            writeResults(data.results);
         }});
     }
 
     $(document).ready(function() {
-        // not on changelist views
-        if (window.location.pathname.split('/').length != 5) {
-            makeContainer();
-            refreshAPI();
-            $(document).on('click', '#trending-refresh', refreshAPI);
-        }
+        makeContainer();
+        refreshAPI();
+        $(document).on('click', '#trending-refresh', refreshAPI);
     })
 });
