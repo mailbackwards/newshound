@@ -27,7 +27,7 @@ class Breed(models.Model):
     intro = models.TextField(default=u'')
     sample_photo = models.URLField(blank=True, default='http://via.placeholder.com/350x150')
     size = models.CharField(max_length=1, choices=SIZE_CHOICES, default='S')
-    group = models.ForeignKey(BreedGroup, blank=True, null=True)
+    group = models.ForeignKey(BreedGroup, blank=True, null=True, related_name='breeds')
 
     def __str__(self):
         return self.name
@@ -88,6 +88,9 @@ class Post(models.Model):
 
     def __str__(self):
         return self.headline
+
+    def get_absolute_url(self):
+        return reverse('admin:newshound_post_change', args=[self.pk])
 
     class Meta:
         ordering = ('-pub_date',)

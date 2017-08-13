@@ -6,6 +6,7 @@ from django.utils.html import format_html
 from django_object_actions import DjangoObjectActions, takes_instance_or_queryset
 from django_admin_row_actions import AdminRowActionsMixin
 from inline_actions.admin import InlineActionsMixin, InlineActionsModelAdminMixin
+import nested_admin
 
 from .admin_mixins import ActionFieldMixin, TrendingDogMixin
 from .models import Post, Dog, Breed, BreedGroup, DogBreedRelationship
@@ -99,8 +100,21 @@ class PostAdmin(DjangoObjectActions,
     change_actions = ('view_breeds', 'make_dogs_good')
 
 
-class DogBreedInline(admin.TabularInline):
+class DogBreedInline(nested_admin.NestedTabularInline):
     model = DogBreedRelationship
+    extra = 0
+
+
+class BreedInline(nested_admin.NestedTabularInline):
+    model = Breed
+    fields = ['name', 'blurb', 'size', 'sample_photo']
+    extra = 0
+    inlines = [DogBreedInline]
+
+
+class BreedGroupAdmin(nested_admin.NestedModelAdmin):
+    model = BreedGroup
+    inlines = [BreedInline]
 
 
 class DogAdmin(ActionFieldMixin, admin.ModelAdmin):
@@ -109,14 +123,17 @@ class DogAdmin(ActionFieldMixin, admin.ModelAdmin):
     inlines = [DogBreedInline]
 
 
+class BreedGroupAdmin(nested_admin.NestedModelAdmin):
+    model = BreedGroup
+    inlines = [BreedInline]
+
+    def get_queryset(self, request):
+        qs = super(BreedGroupAdmin, self).get_queryset(request)
+        return qs.prefetch_related('breeds', 'breeds__dog_relations')
 
 
 class BreedAdmin(admin.ModelAdmin):
     model = Breed
-
-
-class BreedGroupAdmin(admin.ModelAdmin):
-    model = BreedGroup
 
 
 admin.site.register(Post, PostAdmin)
