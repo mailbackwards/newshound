@@ -11,6 +11,18 @@ from .admin_mixins import ActionFieldMixin, TrendingDogMixin
 from .models import Post, Dog, Breed, BreedGroup, DogBreedRelationship
 
 
+class DogInline(InlineActionsMixin, admin.TabularInline):
+    model = Post.dogs_mentioned.through
+    inline_actions = ['breed_groups']
+
+    def breed_groups(self, request, obj, parent_obj=None):
+        breed_groups = ','.join([str(i) for i in
+            DogBreedRelationship.objects.filter(dog=obj.dog) \
+                                .values_list('breed__group__pk', flat=True)])
+        base_url = reverse('admin:newshound_breedgroup_changelist')
+        return redirect(base_url + '?id__in=' + breed_groups)
+
+
 class PostAdmin(DjangoObjectActions,
                 AdminRowActionsMixin,
                 InlineActionsModelAdminMixin,
@@ -20,6 +32,7 @@ class PostAdmin(DjangoObjectActions,
     model = Post
     list_display = ['pub_date', 'headline', 'publication_status']
     list_editable = ['headline']
+    inlines = [DogInline]
     action_fields = ['publication_status']  # from ActionFieldMixin
     inline_actions = ['make_dogs_good', 'publish_edited'] # from InlineActions
 
@@ -70,7 +83,7 @@ class PostAdmin(DjangoObjectActions,
         return redirect('admin:newshound_breed_changelist')
     view_breeds.label = 'View breeds'
 
-    def publish_edited(modeladmin, request, queryset):
+    def publish_edited(modeladmin, request, queryset, parent_obj=None):
         """Publish all items currently marked as `Edit`. Includes a confirmation view."""
         edit_posts = queryset.filter(publication_status=Post.PUB_STATUS_EDIT)
         if 'confirm' in request.POST:
@@ -86,17 +99,16 @@ class PostAdmin(DjangoObjectActions,
     change_actions = ('view_breeds', 'make_dogs_good')
 
 
-class DogAdmin(ActionFieldMixin, admin.ModelAdmin):
-    model = Dog
-    action_fields = ['is_good']     # from ActionFieldMixin
-
-
 class DogBreedInline(admin.TabularInline):
     model = DogBreedRelationship
 
 
-class DogInline(admin.TabularInline):
-    model = Post.dogs_mentioned.through
+class DogAdmin(ActionFieldMixin, admin.ModelAdmin):
+    model = Dog
+    action_fields = ['is_good']     # from ActionFieldMixin
+    inlines = [DogBreedInline]
+
+
 
 
 class BreedAdmin(admin.ModelAdmin):

@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'django_countries',
     'django_object_actions',
     'inline_actions',
+    'nested_admin',
     'rest_framework',
 
     'newshound',
