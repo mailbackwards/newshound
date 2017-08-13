@@ -66,6 +66,7 @@ class TrendingDogMixin(object):
     def trending(self, request, object_id, **kwargs):
         if request.method == 'GET':
             obj = get_object_or_404(self.model, id=object_id)
+            # Advanced machine learning dog trend detection algorithm here...
             trending_dogs = get_trending_dogs(obj)
             dogs = DogSerializer(trending_dogs, many=True).data
             return JsonResponse({'dogs': dogs, 'success': True})

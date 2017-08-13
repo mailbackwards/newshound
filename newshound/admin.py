@@ -1,18 +1,27 @@
 from django.contrib import admin, messages
 from django.shortcuts import render, redirect
+from django.urls import reverse
 from django.utils.html import format_html
 
 from django_object_actions import DjangoObjectActions, takes_instance_or_queryset
+from django_admin_row_actions import AdminRowActionsMixin
+from inline_actions.admin import InlineActionsMixin, InlineActionsModelAdminMixin
 
 from .admin_mixins import ActionFieldMixin, TrendingDogMixin
 from .models import Post, Dog, Breed, BreedGroup, DogBreedRelationship
 
 
-class PostAdmin(DjangoObjectActions, ActionFieldMixin, TrendingDogMixin, admin.ModelAdmin):
+class PostAdmin(DjangoObjectActions,
+                AdminRowActionsMixin,
+                InlineActionsModelAdminMixin,
+                ActionFieldMixin,
+                TrendingDogMixin,
+                admin.ModelAdmin):
     model = Post
     list_display = ['pub_date', 'headline', 'publication_status']
     list_editable = ['headline']
     action_fields = ['publication_status']  # from ActionFieldMixin
+    inline_actions = ['make_dogs_good', 'publish_edited'] # from InlineActions
 
     ### Admin defaults ###
 
@@ -32,9 +41,23 @@ class PostAdmin(DjangoObjectActions, ActionFieldMixin, TrendingDogMixin, admin.M
         ) for dog in obj.dogs_mentioned.all()]
         return format_html('<br />'.join(dog_html))
 
+    ### Row actions ###
+
+    def get_row_actions(self, obj):
+        row_actions = [{
+            'label': 'Delete',
+            'url': reverse('admin:newshound_post_delete', args=[obj.id]),
+        }, {
+            'label': 'Good dogs',
+            'action': 'make_dogs_good',
+            'tooltip': 'Turn all the dogs into good dogs',
+        }]
+        row_actions += super(PostAdmin, self).get_row_actions(obj)
+        return row_actions
+
     ### Object actions ###
 
-    def make_dogs_good(self, request, obj):
+    def make_dogs_good(self, request, obj, parent_obj=None):
         """Set all dogs mentioned in this article to be `good`. Good dogs!"""
         num_dogs = obj.dogs_mentioned.update(is_good=True)
         self.message_user(request, '{} dogs are now good'.format(num_dogs))

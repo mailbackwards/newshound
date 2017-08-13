@@ -38,8 +38,10 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
+    'django_admin_row_actions',
     'django_countries',
     'django_object_actions',
+    'inline_actions',
     'rest_framework',
 
     'newshound',
