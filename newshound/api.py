@@ -12,6 +12,9 @@ class DogSerializer(serializers.ModelSerializer):
 
 
 class DogViewSet(viewsets.ReadOnlyModelViewSet):
+    """
+    This view powers the admin AJAX "Trending dogs" view.
+    """
     serializer_class = DogSerializer
     queryset = Dog.trending.all()
 

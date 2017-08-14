@@ -11,6 +11,10 @@ from .api import DogSerializer, dog_api_view
 
 
 def make_field_action(field_name, field_verbose_name, value, value_verbose_name):
+    """
+    Given the name and verbose_names of the field and the value, create
+    an admin action that updates the given field to the given value.
+    """
     name = 'set_{}_to_{}'.format(field_name, value)
     description = 'Set {} to "{}"'.format(field_verbose_name, value_verbose_name)
 
@@ -65,7 +69,9 @@ class TrendingDogMixin(object):
     This demonstrates how to add list-wide and object-specific views to admin.
     It also demonstrates two different ways to structure admin AJAX views.
     """
+
     def trending(self, request, object_id, **kwargs):
+        # a custom view that shows trending dogs
         if request.method == 'GET':
             obj = get_object_or_404(self.model, id=object_id)
             # We could filter by dogs specific to this post here, if needed
@@ -76,6 +82,8 @@ class TrendingDogMixin(object):
             return JsonResponse({'results': []})
 
     def get_urls(self):
+        # override this method to add custom views
+        # This adds 2 views; one in the model admin, the other in API
         urls = super(TrendingDogMixin, self).get_urls()
 
         def wrap(view):
@@ -97,4 +105,5 @@ class TrendingDogMixin(object):
         return suggest_urls + urls
 
     class Media:
+        # Add the JS file that calls the AJAX views
         js = (('dog_trending.js'),)

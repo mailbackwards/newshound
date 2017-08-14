@@ -6,6 +6,9 @@ from django_countries.fields import CountryField
 
 
 class BreedGroup(models.Model):
+    """
+    A group of breeds, e.g. Terrier, Toy, or Herding.
+    """
     name = models.CharField(max_length=64, blank=False, unique=True)
     country_of_origin = CountryField(blank=True)
 
@@ -14,6 +17,9 @@ class BreedGroup(models.Model):
 
 
 class Breed(models.Model):
+    """
+    A dog breed, e.g. Poodle. Also contains a ForeignKey to breed groups.
+    """
     SIZE_CHOICES = (
         ('S', 'Small'),
         ('M', 'Medium'),
@@ -37,6 +43,10 @@ class Breed(models.Model):
 
 
 class DogBreedRelationship(models.Model):
+    """
+    The relationship between a dog and a breed. A dog can be 25% doberman,
+    for instance.
+    """
     breed = models.ForeignKey(Breed, related_name='dog_relations')
     dog = models.ForeignKey('Dog', related_name='breed_relations')
     percent = models.PositiveIntegerField(
@@ -55,6 +65,9 @@ class TrendingDogManager(models.Manager):
 
 
 class Dog(models.Model):
+    """
+    An individual dog. Has relationship to breeds.
+    """
     name = models.CharField(max_length=128, blank=False, null=False)
     date_of_birth = models.DateField(null=True)
     photo = models.URLField(blank=True, default='http://via.placeholder.com/350x150')
@@ -80,6 +93,10 @@ class Dog(models.Model):
 
 
 class Post(models.Model):
+    """
+    Posts about dogs. Contains fields like headline and publication date,
+    along with a relation for all dogs mentioned in the post.
+    """
     PUB_STATUS_DRAFT = 'D'
     PUB_STATUS_EDIT = 'E'
     PUB_STATUS_PUBLISHED = 'P'

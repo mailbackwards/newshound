@@ -13,6 +13,9 @@ from .models import Post, Dog, Breed, BreedGroup, DogBreedRelationship
 
 
 class DogInline(InlineActionsMixin, admin.TabularInline):
+    """
+    Use inline-actions to link to all groups associated with dogs in the inline
+    """
     model = Post.dogs_mentioned.through
     inline_actions = ['breed_groups']
 
@@ -30,6 +33,10 @@ class PostAdmin(DjangoObjectActions,
                 ActionFieldMixin,
                 TrendingDogMixin,
                 admin.ModelAdmin):
+    """
+    Most of the business is in here.
+    Action fields, row actions, inline actions, and field actions.
+    """
     model = Post
     list_display = ['pub_date', 'headline', 'publication_status']
     list_editable = ['headline']
@@ -58,6 +65,9 @@ class PostAdmin(DjangoObjectActions,
     ### Row actions ###
 
     def get_row_actions(self, obj):
+        """
+        Use django-admin-row-actions to add links and methods to the changelist
+        """
         row_actions = [{
             'label': 'Delete',
             'url': reverse('admin:newshound_post_delete', args=[obj.id]),
@@ -72,7 +82,9 @@ class PostAdmin(DjangoObjectActions,
     ### Object actions ###
 
     def make_dogs_good(self, request, obj, parent_obj=None):
-        """Set all dogs mentioned in this article to be `good`. Good dogs!"""
+        """
+        Set all dogs mentioned in this article to be `good`. Good dogs!
+        """
         num_dogs = obj.dogs_mentioned.update(is_good=True)
         self.message_user(request, '{} dogs are now good'.format(num_dogs))
     make_dogs_good.label = 'Make dogs good'
@@ -80,12 +92,16 @@ class PostAdmin(DjangoObjectActions,
 
     @takes_instance_or_queryset
     def view_breeds(self, request, queryset):
-        """Provide a shortcut link to breeds in both changelist and change views."""
+        """
+        Provide a shortcut link to breeds in both changelist and change views.
+        """
         return redirect('admin:newshound_breed_changelist')
     view_breeds.label = 'View breeds'
 
     def publish_edited(modeladmin, request, queryset, parent_obj=None):
-        """Publish all items currently marked as `Edit`. Includes a confirmation view."""
+        """
+        Publish all items currently marked as `Edit`. Includes a confirmation view.
+        """
         edit_posts = queryset.filter(publication_status=Post.PUB_STATUS_EDIT)
         if 'confirm' in request.POST:
             num_posts = edit_posts.update(publication_status=Post.PUB_STATUS_PUBLISHED)
@@ -95,7 +111,7 @@ class PostAdmin(DjangoObjectActions,
             return render(request, 'publish_confirm.html', {'posts': edit_posts})
     publish_edited.label = 'Publish all edits'
 
-    # Set the object_actions
+    # Set the object_actions at the bottom
     changelist_actions = ('view_breeds', 'publish_edited')
     change_actions = ('view_breeds', 'make_dogs_good')
 
@@ -103,6 +119,15 @@ class PostAdmin(DjangoObjectActions,
 class DogBreedInline(nested_admin.NestedTabularInline):
     model = DogBreedRelationship
     extra = 0
+
+
+class DogAdmin(ActionFieldMixin, admin.ModelAdmin):
+    """
+    `action_fields` lets you dynamically set actions based on your fields.
+    """
+    model = Dog
+    action_fields = ['is_good']     # from ActionFieldMixin
+    inlines = [DogBreedInline]
 
 
 class BreedInline(nested_admin.NestedTabularInline):
@@ -113,17 +138,9 @@ class BreedInline(nested_admin.NestedTabularInline):
 
 
 class BreedGroupAdmin(nested_admin.NestedModelAdmin):
-    model = BreedGroup
-    inlines = [BreedInline]
-
-
-class DogAdmin(ActionFieldMixin, admin.ModelAdmin):
-    model = Dog
-    action_fields = ['is_good']     # from ActionFieldMixin
-    inlines = [DogBreedInline]
-
-
-class BreedGroupAdmin(nested_admin.NestedModelAdmin):
+    """
+    nested_admin gives you inlines inside inlines in the change view.
+    """
     model = BreedGroup
     inlines = [BreedInline]
 
@@ -133,6 +150,10 @@ class BreedGroupAdmin(nested_admin.NestedModelAdmin):
 
 
 class BreedAdmin(admin.ModelAdmin):
+    """
+    readonly_fields + format_html let you put preview and other HTML in the
+    change views.
+    """
     model = Breed
     fields = ['name', 'sample_photo', 'photo_preview',
               'blurb', 'intro', 'size', 'group']
