@@ -6,14 +6,17 @@ and packages around custom views and actions.
 Contains articles, as well as a database of dog breeds and their breed types.
 The breeds/groups data is real! The dogs are not.
 
-To run:
+Created for [DjangoCon 2017](https://2017.djangocon.us/talks/saved-you-a-click-or-three-supercharging-the-django-admin-with-actions-and-views/).
+
+### Run
 
 - put a `SECRET_KEY` in your env
+- `pip install -r requirements.txt`
 - `python manage.py migrate`
 - `python manage.py runserver 0:5000`
 - navigate to localhost:5000
 
-This repo features a few packages:
+### Packages
 
 - [django-object-actions](https://github.com/crccheck/django-object-actions)
 - [django-inline-actions](https://github.com/escaped/django-inline-actions/)
@@ -22,7 +25,7 @@ This repo features a few packages:
 
 See also `admin_site.py` and `admin_mixins.py` for some other customizations.
 
-Created for [DjangoCon 2017](https://2017.djangocon.us/talks/saved-you-a-click-or-three-supercharging-the-django-admin-with-actions-and-views/).
+### Important!
 
 For dogs, by dogs, about dogs.
 
