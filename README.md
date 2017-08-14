@@ -5,11 +5,6 @@ and packages around custom views and actions.
 
 Created for [DjangoCon 2017](https://2017.djangocon.us/talks/saved-you-a-click-or-three-supercharging-the-django-admin-with-actions-and-views/).
 
-Contains articles, as well as a database of dog breeds and their breed types.
-The breeds/groups data is real! The dogs are not. A schema:
-
-![Newshound schema](static/newshound-schema.png)
-
 ### Run
 
 - put a `SECRET_KEY` in your env
@@ -26,6 +21,13 @@ The breeds/groups data is real! The dogs are not. A schema:
 - [django-nested-admin](https://github.com/theatlantic/django-nested-admin)
 
 See also `admin_site.py` and `admin_mixins.py` for some other customizations.
+
+### Schema
+
+Contains articles, as well as a database of dog breeds and their breed types.
+The breeds/groups data is real! The dogs are not. A schema:
+
+![Newshound schema](newshound/static/newshound-schema.png)
 
 ### Important!
 
