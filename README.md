@@ -3,7 +3,7 @@
 A sample app that demonstrates some simple, sustainable Django admin features
 and packages around custom views and actions.
 
-Created for [DjangoCon 2017](https://2017.djangocon.us/talks/saved-you-a-click-or-three-supercharging-the-django-admin-with-actions-and-views/).
+Created for [DjangoCon 2017](https://2017.djangocon.us/talks/saved-you-a-click-or-three-supercharging-the-django-admin-with-actions-and-views/). Slides can be found [here](https://docs.google.com/presentation/d/1lVgL3SEQUTUcSFs4sD6-nGFbFn15FOK310D6m7F_WuY/edit)
 
 ### Run
 
