@@ -6,6 +6,13 @@ and packages around custom views and actions.
 Contains articles, as well as a database of dog breeds and their breed types.
 The breeds/groups data is real! The dogs are not.
 
+To run:
+
+- put a `SECRET_KEY` in your env
+- `python manage.py migrate`
+- `python manage.py runserver 0:5000`
+- navigate to localhost:5000
+
 This repo features a few packages:
 
 - [django-object-actions](https://github.com/crccheck/django-object-actions)
