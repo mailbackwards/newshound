@@ -1,3 +1,5 @@
+
+
 django.jQuery(function($) {
     var $target = $('#content-main');    // element to put the container before
 
@@ -13,7 +15,7 @@ django.jQuery(function($) {
     function writeResults(results) {
         var html = '<table>';
         for (var i = 0; i < results.length; i++) {
-            html += '<tr><td><img src="' + results[i].photo + '" height="50px" width="100px"></td><td>' + results[i].name + '</td><td>' + results[i].breeds + '</td></tr>'
+            html += '<tr><td><img src="' + results[i].photo + '"></td><td>' + results[i].name + '</td><td>' + results[i].breeds + '</td></tr>'
         }
         html += '</table>';
         $('#trending').html(html);

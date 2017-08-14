@@ -134,9 +134,9 @@ class BreedGroupAdmin(nested_admin.NestedModelAdmin):
 
 class BreedAdmin(admin.ModelAdmin):
     model = Breed
+    fields = ['name', 'sample_photo', 'photo_preview',
+              'blurb', 'intro', 'size', 'group']
+    readonly_fields = ['photo_preview']
 
-
-admin.site.register(Post, PostAdmin)
-admin.site.register(Dog, DogAdmin)
-admin.site.register(Breed, BreedAdmin)
-admin.site.register(BreedGroup, BreedGroupAdmin)
+    def photo_preview(self, obj):
+        return format_html('<img src="https:%s" />' % obj.sample_photo)
