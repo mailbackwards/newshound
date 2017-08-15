@@ -11,7 +11,7 @@ Created for [DjangoCon 2017](https://2017.djangocon.us/talks/saved-you-a-click-o
 - `pip install -r requirements.txt`
 - `python manage.py migrate`
 - `python manage.py runserver 0:5000`
-- navigate to localhost:5000
+- navigate to localhost:5000/admin/
 
 ### Packages
 
@@ -30,6 +30,11 @@ The breeds/groups data is real! The dogs are not. A schema:
 ![Newshound schema](newshound/static/newshound-schema.png)
 
 ### Important!
+
+#### Data sources:
+
+- Breeds: [http://www.akc.org/dog-breeds/](http://www.akc.org/dog-breeds/)
+- Sample dog names: [https://data.world/anchorage/dog-names/workspace/file?filename=dog-names_1.csv](https://data.world/anchorage/dog-names/workspace/file?filename=dog-names_1.csv)
 
 For dogs, by dogs, about dogs.
 
