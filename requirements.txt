@@ -1,7 +1,7 @@
 beautifulsoup4==4.6.0
 certifi==2017.7.27.1
 chardet==3.0.4
-Django==1.10.7
+Django==1.11.28
 django-admin-row-actions==0.0.2
 django-countries==4.6.1
 django-inline-actions==1.1.0
