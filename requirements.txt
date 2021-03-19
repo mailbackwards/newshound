@@ -7,7 +7,7 @@ django-countries==4.6.1
 django-inline-actions==1.1.0
 django-nested-admin==3.0.20
 django-object-actions==0.10.0
-djangorestframework==3.6.3
+djangorestframework==3.11.2
 idna==2.5
 python-monkey-business==1.0.0
 pytz==2017.2
